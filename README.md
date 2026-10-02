@@ -48,19 +48,20 @@ Each task must be completed using an iterative process involving LLM suggestions
 
 ### Task 1: Fix the laser firing / input state bug
 
-Pressing SPACE is designed to launch the game when waiting and fire a defensive projectile during flight. In the current build of game_engine.handle_events(), pygame.K_SPACE only checks if self.game_over: self.reset() else: self.started = True. Once the game is running, pressing SPACE does nothing because there is no condition handling weapon fire or projectile generation while self.started is active. Implement laser projectile firing when SPACE is pressed during active gameplay so players can shoot down incoming meteors
+Pressing SPACE launches the ship from the title screen, but pressing SPACE during active flight does nothing rather than firing a defensive laser projectile. Ensure the ship fires lasers to destroy incoming meteors while flying.
 
-### Task 2: Implement meteor fragments on destruction
+### Task 2: Implement Meteor Splitting on Impact
 
-When an incoming large meteor is struck and destroyed by a laser, make it split into 2 smaller child meteor fragments traveling outwards at diverging angles instead of vanishing immediately. Small meteors should be completely eliminated when hit.
+Destroying large meteors currently causes them to vanish completely from the screen. Make destroyed large meteors fracture into smaller child fragments that diverge outwards, while small meteors dissolve entirely.
  
-### Task 3: Implement shield power-up orbs
+### Task 3: Implement Collectible Shield Power-Up Orbs
 
-Introduce a collectible shield orb that periodically drifts down across the screen. Touching the orb equips the player ship with an energy shield barrier that absorbs one meteor collision without triggering Game Over.
+The ship is instantly destroyed on any meteor contact. Introduce a drifting energy orb that the player can collect to gain a temporary shield barrier capable of absorbing one collision.
 
-### Task 4: Implement surviving score multipliers
+### Task 4: Implement Consecutive Survival Multipliers
 
-Survival score currently increments at a flat rate frame-by-frame. Implement an escalating multiplier in game_engine.update() that increases by 1x for every 10 continuous seconds survived without getting hit, resetting back to 1x if a shield is lost.
+Score currently increments at a flat rate over time. Introduce an escalating multiplier that boosts score gain for every 10 seconds of continuous survival without taking a hit.
+
 ---
 
 ## Expected Behavior
