@@ -7,6 +7,21 @@ WIDTH,HEIGHT=700,520
 FPS=60
 BG=(8,5,20)
 
+class Laser:
+    def __init__(self, x, y):
+        self.rect=pygame.Rect(x-2,y-16,4,16)
+        self.speed=10
+
+    def update(self):
+        self.rect.y-=self.speed
+
+    def off_screen(self):
+        return self.rect.bottom<0
+
+    def draw(self, screen):
+        pygame.draw.rect(screen,(100,240,255),self.rect)
+        pygame.draw.rect(screen,(220,255,255),self.rect.inflate(-2,0))
+
 class GameEngine:
     def __init__(self):
         pygame.init()
@@ -21,6 +36,7 @@ class GameEngine:
     def reset(self):
         self.ship=Ship(WIDTH//2,HEIGHT-80)
         self.meteors=[]
+        self.lasers=[]
         self.timer=0
         self.spawn_interval=60
         self.score=0
@@ -32,8 +48,12 @@ class GameEngine:
             if event.type==pygame.QUIT: return False
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_SPACE:
-                    if self.game_over: self.reset()
-                    else: self.started=True
+                    if self.game_over: 
+                        self.reset()
+                    elif not self.started:
+                        self.started=True
+                    else:
+                        self.lasers.append(Laser(*self.ship.rect.center))
         return True
 
     def update(self):
@@ -50,6 +70,23 @@ class GameEngine:
             if m.collides(self.ship.rect):
                 self.game_over=True
         self.meteors=[m for m in self.meteors if not m.off_screen(HEIGHT)]
+        active_lasers=[]
+        for laser in self.lasers:
+            laser.update()
+            if laser.off_screen():
+                continue
+            hit_meteor=None
+            for meteor in self.meteors:
+                dx=meteor.x-laser.rect.centerx
+                dy=meteor.y-laser.rect.centery
+                if (dx**2+dy**2)**0.5 < meteor.radius+4:
+                    hit_meteor=meteor
+                    break
+            if hit_meteor is not None:
+                self.meteors.remove(hit_meteor)
+            else:
+                active_lasers.append(laser)
+        self.lasers=active_lasers
         self.score+=1
 
     def draw(self):
@@ -57,6 +94,7 @@ class GameEngine:
         for sx,sy,sr in self.stars:
             pygame.draw.circle(self.screen,(200,200,220),(sx,sy),sr)
         for m in self.meteors: m.draw(self.screen)
+        for laser in self.lasers: laser.draw(self.screen)
         self.ship.draw(self.screen)
         sc=self.font.render(f"Time: {self.score//60}s",True,(200,200,240))
         self.screen.blit(sc,(10,10))
