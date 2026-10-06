@@ -48,7 +48,7 @@ class GameEngine:
             if event.type==pygame.QUIT: return False
             if event.type==pygame.KEYDOWN:
                 if event.key==pygame.K_SPACE:
-                    if self.game_over: 
+                    if self.game_over:
                         self.reset()
                     elif not self.started:
                         self.started=True
@@ -71,21 +71,29 @@ class GameEngine:
                 self.game_over=True
         self.meteors=[m for m in self.meteors if not m.off_screen(HEIGHT)]
         active_lasers=[]
+        destroyed_meteors=[]
+        new_fragments=[]
         for laser in self.lasers:
             laser.update()
             if laser.off_screen():
                 continue
             hit_meteor=None
             for meteor in self.meteors:
+                if meteor in destroyed_meteors:
+                    continue
                 dx=meteor.x-laser.rect.centerx
                 dy=meteor.y-laser.rect.centery
                 if (dx**2+dy**2)**0.5 < meteor.radius+4:
                     hit_meteor=meteor
                     break
             if hit_meteor is not None:
-                self.meteors.remove(hit_meteor)
+                destroyed_meteors.append(hit_meteor)
+                new_fragments.extend(hit_meteor.create_fragments())
             else:
                 active_lasers.append(laser)
+        if destroyed_meteors:
+            self.meteors=[m for m in self.meteors if m not in destroyed_meteors]
+            self.meteors.extend(new_fragments)
         self.lasers=active_lasers
         self.score+=1
 
